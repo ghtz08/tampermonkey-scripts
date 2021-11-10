@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         ZhiHu Clean
+// @name         ZhiHu Recommend Clean
 // @namespace    http://tampermonkey.net/
 // @version      0.1
-// @description  Remove ZhiHu video and AD
+// @description  Remove ZhiHu recommend video and AD
 // @author       TanZhou
 // @match        https://www.zhihu.com/
 // @icon         data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==
