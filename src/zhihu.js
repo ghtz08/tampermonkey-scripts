@@ -1,19 +1,15 @@
 // ==UserScript==
-// @name         ZhiHu Video Filter
+// @name         ZhiHu Clean
 // @namespace    http://tampermonkey.net/
 // @version      0.1
-// @description  try to take over the world!
-// @author       You
-// @match        https://www.zhihu.com
+// @description  Remove ZhiHu video and AD
+// @author       TanZhou
+// @match        https://www.zhihu.com/
 // @icon         data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==
 // @grant        none
 // ==/UserScript==
 
-
-'use strict';
-
-
-console.log("###############################################################################");
+console.log("vvvvvv ZhiHu clean vvvvvv");
 
 let NodeType = {
     Other        : 0,
@@ -63,6 +59,7 @@ function get_node_type(node) {
         return NodeType.Advertisement;
     }
 
+    console.log(node);
     return NodeType.Other;
 }
 
@@ -89,98 +86,74 @@ function get_node_title(node, type) {
     }
 }
 
-function parse_node(node) {
+function proc_node(node) {
     let type = get_node_type(node);
     let title = get_node_title(node, type);
 
-    return {
-        origin: node,
-        type: type,
-        title: title,
-    };
-}
-
-function zhihu_remove_video_and_ad() {
-    // debugger;
-    // 在非第一次运行时，第一个结点是重复处理的
-    let node = window.tz_clean_node_start;
-    while (true) {
-        let attr = parse_node(node);
-        console.log("clean", attr.type, attr.title);
-        if (attr.type === NodeType.Other) { break; }
-        let next = node.nextElementSibling;
-
-        switch (attr.type) {
-            case NodeType.Answer:
-            case NodeType.Article:
-                break;
-            case NodeType.Video:
-            case NodeType.VideoAnswer:
-            case NodeType.Advertisement: {
-                console.log("remove:", attr.type, attr.title);
-                attr.origin.parentNode.removeChild(attr.origin);
-                break;
-            }
-            default: {
-                console.error("Unknown Type", attr.type);
-            }
+    switch (type) {
+        case NodeType.Answer:
+        case NodeType.Article:
+            break;
+        case NodeType.Video:
+        case NodeType.VideoAnswer:
+        case NodeType.Advertisement: {
+            console.log("remove:", type, title);
+            node.parentNode.removeChild(node);
+            break;
         }
-
-        node = next;
+        default: {
+            console.error("Unknown Type", type);
+        }
     }
-    window.tz_clean_node_start = node.previousElementSibling;
 }
 
-function zhihu_clean_content() {
-    console.log("#### zhihu clean ####");
-    zhihu_remove_video_and_ad();
+function proc_record(record) {
+    switch (record.type) {
+        case 'childList': {
+            if (record.addedNodes.length !== 0) {
+                record.addedNodes.forEach(node => { proc_node(node); });
+            }
+            break;
+        }
+        default: {
+            console.log(record.type);
+        }
+    }
 }
 
-function zhihu_clean_side() {
-    let elems = document.getElementsByClassName("Pc-card Card");
-
-    console.log(elems.length);
-    while (elems.length !== 0) {
-        let elem = elems[0];
-        elem.parentNode.removeChild(elem);
-        console.log(elems.length);
+function html_collection_to_array(c) {
+    let a = [];
+    for (let i = 0; i != c.length; i++) {
+        a.push(c[i]);
     }
+    return a;
 }
 
 (function() {
-    let class_name = "Card TopstoryItem TopstoryItem--old TopstoryItem-isRecommend";
-    window.tz_clean_node_start = document.getElementsByClassName(class_name)[0];
+    'use strict';
 
-    zhihu_clean_side();
-    zhihu_clean_content();
+    // Your code here...
+    // debugger;
+    // TopstoryMain
+    // Topstory-recommend
+    let recommend = document.getElementsByClassName("Topstory-recommend")[0].children[0];
+    let deleted = html_collection_to_array(recommend.getElementsByClassName(
+        "Card TopstoryItem TopstoryItem--old TopstoryItem-isRecommend"));
+    deleted.forEach(node => {
+        proc_node(node);
+    });
+
+    let observer = new MutationObserver((records, observer) => {
+        records.forEach(record => proc_record(record));
+        // console.log(records);
+        // console.log(observer);
+    });
+    // attributeName
+    observer.observe(recommend, {
+        childList: true,
+        attributes: true,
+    });
+    // window.tz_recommend = recommend;
 })();
 
-// 滚动翻页结束时再清理一次
-let timer_scroll = 0;
-document.onscroll = function() {
-    clearTimeout(timer_scroll);
-    timer_scroll = setTimeout(_ => {
-        zhihu_clean_content();
-    }, 600);
-}
-
-// let scroll_timer = {};
-
-// document.custom_var = "hello world";
-
-// scroll监听
-// document.onscroll = function() {
-//     console.log(document.documentElement.scrollTop, document.body.scrollTop);
-//   // clearTimeout(scroll_timer);
-//   // scroll_timer = setTimeout(isScrollEnd, 1000);
-//   // t1 = document.documentElement.scrollTop || document.body.scrollTop;
-// }
-
-// function isScrollEnd() {
-//     t2 = document.documentElement.scrollTop || document.body.scrollTop;
-//     if(t2 == t1){
-//         console.log('滚动结束了')
-//     }
-// }
-
-console.log("*****************************************************************************");
+console.log("^^^^^^ ZhiHu clean ^^^^^^");
