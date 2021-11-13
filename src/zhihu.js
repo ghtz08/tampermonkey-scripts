@@ -93,16 +93,17 @@ function proc_node(node) {
     switch (type) {
         case NodeType.Answer:
         case NodeType.Article:
-            break;
+            return false;
         case NodeType.Video:
         case NodeType.VideoAnswer:
         case NodeType.Advertisement: {
             console.log("remove:", type, title);
             node.parentNode.removeChild(node);
-            break;
+            return true;
         }
         default: {
             console.error("Unknown Type", type);
+            return false;
         }
     }
 }
@@ -116,7 +117,7 @@ function proc_record(record) {
             break;
         }
         default: {
-            console.log(record.type);
+            console.log("Unexpected:", record.type);
         }
     }
 }
@@ -127,6 +128,27 @@ function html_collection_to_array(c) {
         a.push(c[i]);
     }
     return a;
+}
+
+function track_node(node) {
+    let observer = new MutationObserver((records, observer) => {
+        records.forEach(record => {
+            switch (record.type) {
+                case 'attributes': {
+                    if (record.attributeName === "data-za-extra-module") {
+                        proc_node(node);
+                    }
+                    break;
+                }
+                default: {
+                    console.warn("Unexpected:", record.type);
+                }
+            }
+        });
+    });
+    observer.observe(node.children[0], { attributes: true, });
+
+    setTimeout(() => { observer.disconnect(); }, 1000 * 10);
 }
 
 (function() {
@@ -140,7 +162,9 @@ function html_collection_to_array(c) {
     let deleted = html_collection_to_array(recommend.getElementsByClassName(
         "Card TopstoryItem TopstoryItem--old TopstoryItem-isRecommend"));
     deleted.forEach(node => {
-        proc_node(node);
+        if (!proc_node(node)) {
+            track_node(node);
+        }
     });
 
     let observer = new MutationObserver((records, observer) => {
