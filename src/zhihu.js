@@ -65,7 +65,10 @@ function clean_recommend() {
             }
         } while (false);
 
-        if (node.getElementsByClassName("jumpThird-ad-tip").length != 0) {
+        if (node.getElementsByClassName("Pc-feedAd-container").length !== 0) {
+            return NodeType.Advertisement;
+        }
+        if (node.getElementsByClassName("jumpThird-ad-tip").length !== 0) {
             return NodeType.Advertisement;
         }
 
@@ -205,6 +208,7 @@ function clean_side_ad() {
     console.log("vvvvvv ZhiHu clean vvvvvv");
 
     if (window.location.pathname === "/") { clean_recommend(); }
+    console.log(window.location.pathname);
     clean_side_ad();
 
     console.log("^^^^^^ ZhiHu clean ^^^^^^");
