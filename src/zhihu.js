@@ -29,6 +29,10 @@ function clean_recommend() {
         VideoAnswer  : 4,
         Advertisement: 5,
     };
+    let node_type_to_string = [];
+    for (let i in NodeType) {
+        node_type_to_string[NodeType[i]] = i;
+    }
 
     function get_node_type(node) {
         do {
@@ -110,7 +114,7 @@ function clean_recommend() {
             case NodeType.Video:
             case NodeType.VideoAnswer:
             case NodeType.Advertisement: {
-                console.log("remove:", type, title);
+                console.log("remove:", node_type_to_string[type] + ":", title);
                 node.parentNode.removeChild(node);
                 return true;
             }
@@ -158,7 +162,7 @@ function clean_recommend() {
 
     let recommend = document.getElementsByClassName("Topstory-recommend")[0].children[0];
     let deleted = html_collection_to_array(recommend.getElementsByClassName(
-        "Card TopstoryItem TopstoryItem--old TopstoryItem-isRecommend"));
+        "Card TopstoryItem TopstoryItem"));
     deleted.forEach(node => { if (!proc_node(node)) { track_node(node); } });
 
     let observer = new MutationObserver((records, observer) => {
@@ -208,7 +212,6 @@ function clean_side_ad() {
     console.log("vvvvvv ZhiHu clean vvvvvv");
 
     if (window.location.pathname === "/") { clean_recommend(); }
-    console.log(window.location.pathname);
     clean_side_ad();
 
     console.log("^^^^^^ ZhiHu clean ^^^^^^");
